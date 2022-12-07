@@ -1,8 +1,8 @@
-//TODO: add practical feedback, like angle or endPosition for flick or total time for press and such
-
-let addGestureListener = function (elem, gestures) {
+//TODO: find a way to only run code for gestures present in @gestures
+//TODO: get practical feedback from every gesture
+function addGestureEvents (elem, gestures) {
   
-  //consider adding rotate and scale (pinch/spread are NOT for scaling/zooming)
+  //TODO: consider adding rotate and scale (pinch/spread are NOT for scaling/zooming)
   let gesture = {};
   let touches = {};
   
@@ -141,6 +141,8 @@ let addGestureListener = function (elem, gestures) {
   
   let touchcancel = (evt) => {
     evt.preventDefault();
+    gesture = {};
+    touches = {};
   };
   
   elem.addEventListener("touchstart", touchstart);
@@ -149,4 +151,41 @@ let addGestureListener = function (elem, gestures) {
   elem.addEventListener("touchcancel", touchcancel);
 };
 
-export {addGestureListener};
+let template = function () {
+  let runningId = 0;
+  let listeners = {};
+  let func = function () {
+    for (let layer of Object.values(listeners))
+      for (let listener of Object.values(layer))
+        listener(...arguments);
+  };
+  func.addListener = (listener, layer=1000) => {
+    if (!listeners[layer])
+      listeners[layer] = {};
+    listener.id = runningId;
+    listeners[layer][runningId++] = listener;
+    return listener;
+  };
+  func.removeListener = (listener) => {
+    for (let layer of Object.keys(listeners))
+      if (listeners[layer][listener.id ?? listener]) {
+        let result = listeners[layer][listener.id ?? listener];
+        delete listeners[layer][listener.id ?? listener];
+        if (Object.keys(listeners[layer]).length == 0)
+          delete listeners[layer];
+        break;
+      }
+      return result;
+  };
+  return func;
+};
+
+function addEvents (elem, ...gestures) {
+  let g = {};
+  for (let gesture of gestures)
+    g[gesture] = template();
+  addGestureEvents(elem, g);
+  return g;
+}
+
+export {addEvents};
