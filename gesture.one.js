@@ -2,6 +2,11 @@
 //TODO: get practical feedback from every gesture
 function addGestureEvents (elem, gestures) {
   
+
+  //TODO: remove when individual gesture addition is supported
+  if (elem.dataset.gestures)
+    return false;
+  
   //TODO: consider adding rotate and scale (pinch/spread are NOT for scaling/zooming)
   let gesture = {};
   let touches = {};
@@ -149,6 +154,11 @@ function addGestureEvents (elem, gestures) {
   elem.addEventListener("touchmove", touchmove);
   elem.addEventListener("touchend", touchend);
   elem.addEventListener("touchcancel", touchcancel);
+
+  elem.dataset.gestures = true;
+
+  return true;
+
 };
 
 let template = function () {
@@ -182,6 +192,8 @@ let template = function () {
 
 function addEvents (elem, ...gestures) {
   let g = {};
+  if (gestures.length === 0)
+    gestures = ["tap", "press", "drag", "flick", "pinch", "spread"];
   for (let gesture of gestures)
     g[gesture] = template();
   addGestureEvents(elem, g);
